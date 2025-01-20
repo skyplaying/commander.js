@@ -21,7 +21,8 @@ function extractMockSpawnCommand(mock) {
   return mock.mock.calls[0][0];
 }
 
-const describeOrSkipOnWindows = (process.platform === 'win32') ? describe.skip : describe;
+const describeOrSkipOnWindows =
+  process.platform === 'win32' ? describe.skip : describe;
 
 describe('search for subcommand', () => {
   let spawnSpy;
@@ -31,7 +32,7 @@ describe('search for subcommand', () => {
     spawnSpy = jest.spyOn(childProcess, 'spawn').mockImplementation(() => {
       return {
         on: () => {},
-        killed: true
+        killed: true,
       };
     });
   });
@@ -49,6 +50,7 @@ describe('search for subcommand', () => {
     spawnSpy.mockRestore();
   });
 
+  // fs.existsSync gets called on Windows outside the search, so skip the tests (or come up with a different way of checking).
   describe('whether perform search for local files', () => {
     beforeEach(() => {
       existsSpy.mockImplementation(() => false);
@@ -56,6 +58,7 @@ describe('search for subcommand', () => {
 
     test('when no script arg or executableDir then no search for local file', () => {
       const program = new commander.Command();
+      program._checkForMissingExecutable = () => {}; // suppress error, call mocked spawn
       program.name('pm');
       program.command('sub', 'executable description');
       program.parse(['sub'], { from: 'user' });
@@ -65,6 +68,7 @@ describe('search for subcommand', () => {
 
     test('when script arg then search for local files', () => {
       const program = new commander.Command();
+      program._checkForMissingExecutable = () => {}; // suppress error, call mocked spawn
       program.name('pm');
       program.command('sub', 'executable description');
       program.parse(['node', 'script-name', 'sub']);
@@ -74,6 +78,7 @@ describe('search for subcommand', () => {
 
     test('when executableDir then search for local files)', () => {
       const program = new commander.Command();
+      program._checkForMissingExecutable = () => {}; // suppress error, call mocked spawn
       program.name('pm');
       program.executableDir(__dirname);
       program.command('sub', 'executable description');
@@ -84,45 +89,50 @@ describe('search for subcommand', () => {
   });
 
   // We always use node on Windows, and don't spawn executable as the command (which may be a feature or a shortcoming!?).
-  describeOrSkipOnWindows('subcommand command name with no matching local file (non-Windows)', () => {
-    beforeEach(() => {
-      existsSpy.mockImplementation(() => false);
-    });
+  describeOrSkipOnWindows(
+    'subcommand command name with no matching local file (non-Windows)',
+    () => {
+      beforeEach(() => {
+        existsSpy.mockImplementation(() => false);
+      });
 
-    test('when named pm and no script arg or executableDir then spawn pm-sub as command', () => {
-      const program = new commander.Command();
-      program.name('pm');
-      program.command('sub', 'executable description');
-      program.parse(['sub'], { from: 'user' });
+      test('when named pm and no script arg or executableDir then spawn pm-sub as command', () => {
+        const program = new commander.Command();
+        program.name('pm');
+        program.command('sub', 'executable description');
+        program.parse(['sub'], { from: 'user' });
 
-      expect(extractMockSpawnCommand(spawnSpy)).toEqual('pm-sub');
-    });
+        expect(extractMockSpawnCommand(spawnSpy)).toEqual('pm-sub');
+      });
 
-    test('when named pm and script arg then still spawn pm-sub as command', () => {
-      const program = new commander.Command();
-      program.name('pm');
-      program.command('sub', 'executable description');
-      program.parse(['node', 'script-name', 'sub']);
+      test('when named pm and script arg then still spawn pm-sub as command', () => {
+        const program = new commander.Command();
+        program.name('pm');
+        program.command('sub', 'executable description');
+        program.parse(['node', 'script-name', 'sub']);
 
-      expect(extractMockSpawnCommand(spawnSpy)).toEqual('pm-sub');
-    });
+        expect(extractMockSpawnCommand(spawnSpy)).toEqual('pm-sub');
+      });
 
-    test('when no name and script arg then spawn script-sub as command', () => {
-      const program = new commander.Command();
-      program.command('sub', 'executable description');
-      program.parse(['node', 'script.js', 'sub']);
+      test('when no name and script arg then spawn script-sub as command', () => {
+        const program = new commander.Command();
+        program.command('sub', 'executable description');
+        program.parse(['node', 'script.js', 'sub']);
 
-      expect(extractMockSpawnCommand(spawnSpy)).toEqual('script-sub');
-    });
+        expect(extractMockSpawnCommand(spawnSpy)).toEqual('script-sub');
+      });
 
-    test('when named pm and script arg and executableFile then spawn executableFile as command', () => {
-      const program = new commander.Command();
-      program.command('sub', 'executable description', { executableFile: 'myExecutable' });
-      program.parse(['node', 'script.js', 'sub']);
+      test('when named pm and script arg and executableFile then spawn executableFile as command', () => {
+        const program = new commander.Command();
+        program.command('sub', 'executable description', {
+          executableFile: 'myExecutable',
+        });
+        program.parse(['node', 'script.js', 'sub']);
 
-      expect(extractMockSpawnCommand(spawnSpy)).toEqual('myExecutable');
-    });
-  });
+        expect(extractMockSpawnCommand(spawnSpy)).toEqual('myExecutable');
+      });
+    },
+  );
 
   describe('subcommand command name with matching local file', () => {
     test('when construct with name pm and script arg then spawn local pm-sub.js', () => {
@@ -131,7 +141,11 @@ describe('search for subcommand', () => {
 
       const localPath = path.resolve(gLocalDirectory, 'pm-sub.js');
       existsSpy.mockImplementation((path) => path === localPath);
-      program.parse(['node', path.resolve(gLocalDirectory, 'script.js'), 'sub']);
+      program.parse([
+        'node',
+        path.resolve(gLocalDirectory, 'script.js'),
+        'sub',
+      ]);
 
       expect(extractMockSpawnArgs(spawnSpy)).toEqual([localPath]);
     });
@@ -143,7 +157,11 @@ describe('search for subcommand', () => {
 
       const localPath = path.resolve(gLocalDirectory, 'pm-sub.js');
       existsSpy.mockImplementation((path) => path === localPath);
-      program.parse(['node', path.resolve(gLocalDirectory, 'script.js'), 'sub']);
+      program.parse([
+        'node',
+        path.resolve(gLocalDirectory, 'script.js'),
+        'sub',
+      ]);
 
       expect(extractMockSpawnArgs(spawnSpy)).toEqual([localPath]);
     });
@@ -154,7 +172,11 @@ describe('search for subcommand', () => {
 
       const localPath = path.resolve(gLocalDirectory, 'script-sub.js');
       existsSpy.mockImplementation((path) => path === localPath);
-      program.parse(['node', path.resolve(gLocalDirectory, 'script.js'), 'sub']);
+      program.parse([
+        'node',
+        path.resolve(gLocalDirectory, 'script.js'),
+        'sub',
+      ]);
 
       expect(extractMockSpawnArgs(spawnSpy)).toEqual([localPath]);
     });
@@ -167,7 +189,11 @@ describe('search for subcommand', () => {
       // Fallback for compatibility with Commander <= v8
       const localPath = path.resolve(gLocalDirectory, 'script-sub.js');
       existsSpy.mockImplementation((path) => path === localPath);
-      program.parse(['node', path.resolve(gLocalDirectory, 'script.js'), 'sub']);
+      program.parse([
+        'node',
+        path.resolve(gLocalDirectory, 'script.js'),
+        'sub',
+      ]);
 
       expect(extractMockSpawnArgs(spawnSpy)).toEqual([localPath]);
     });
@@ -207,7 +233,11 @@ describe('search for subcommand', () => {
       program.executableDir(execDir);
       const localPath = path.resolve(execDir, 'script-sub.js');
       existsSpy.mockImplementation((path) => path === localPath);
-      program.parse(['node', path.resolve(gLocalDirectory, 'script-Dir', 'script'), 'sub']);
+      program.parse([
+        'node',
+        path.resolve(gLocalDirectory, 'script-Dir', 'script'),
+        'sub',
+      ]);
 
       expect(extractMockSpawnArgs(spawnSpy)).toEqual([localPath]);
     });
@@ -218,10 +248,16 @@ describe('search for subcommand', () => {
 
       const linkPath = path.resolve(gLocalDirectory, 'link', 'link');
       const scriptPath = path.resolve(gLocalDirectory, 'script', 'script.js');
-      const scriptSubPath = path.resolve(gLocalDirectory, 'script', 'link-sub.js');
-      const realPathSyncSpy = jest.spyOn(fs, 'realpathSync').mockImplementation((path) => {
-        return path === linkPath ? scriptPath : linkPath;
-      });
+      const scriptSubPath = path.resolve(
+        gLocalDirectory,
+        'script',
+        'link-sub.js',
+      );
+      const realPathSyncSpy = jest
+        .spyOn(fs, 'realpathSync')
+        .mockImplementation((path) => {
+          return path === linkPath ? scriptPath : linkPath;
+        });
       existsSpy.mockImplementation((path) => path === scriptSubPath);
       program.parse(['node', linkPath, 'sub']);
       realPathSyncSpy.mockRestore();
@@ -233,10 +269,16 @@ describe('search for subcommand', () => {
       const program = new commander.Command('pm');
       const localPath = path.join('relative', 'exec.js');
       const absolutePath = path.resolve(gLocalDirectory, localPath);
-      program.command('sub', 'executable description', { executableFile: localPath });
+      program.command('sub', 'executable description', {
+        executableFile: localPath,
+      });
 
       existsSpy.mockImplementation((path) => path === absolutePath);
-      program.parse(['node', path.resolve(gLocalDirectory, 'script.js'), 'sub']);
+      program.parse([
+        'node',
+        path.resolve(gLocalDirectory, 'script.js'),
+        'sub',
+      ]);
 
       expect(extractMockSpawnArgs(spawnSpy)).toEqual([absolutePath]);
     });
@@ -244,10 +286,16 @@ describe('search for subcommand', () => {
     test('when name pm and script arg and absolute executableFile then spawn local exec.js', () => {
       const program = new commander.Command('pm');
       const localPath = path.resolve(gLocalDirectory, 'absolute', 'exec.js');
-      program.command('sub', 'executable description', { executableFile: localPath });
+      program.command('sub', 'executable description', {
+        executableFile: localPath,
+      });
 
       existsSpy.mockImplementation((path) => path === localPath);
-      program.parse(['node', path.resolve(gLocalDirectory, 'script.js'), 'sub']);
+      program.parse([
+        'node',
+        path.resolve(gLocalDirectory, 'script.js'),
+        'sub',
+      ]);
 
       expect(extractMockSpawnArgs(spawnSpy)).toEqual([localPath]);
     });
@@ -257,12 +305,15 @@ describe('search for subcommand', () => {
     test('when script arg then search for local script-sub.js, .ts, .tsx, .mpjs, .cjs', () => {
       existsSpy.mockImplementation((path) => false);
       const program = new commander.Command();
+      program._checkForMissingExecutable = () => {}; // suppress error, call mocked spawn
       program.command('sub', 'executable description');
       const scriptPath = path.resolve(gLocalDirectory, 'script');
       program.parse(['node', scriptPath, 'sub']);
       const sourceExt = ['.js', '.ts', '.tsx', '.mjs', '.cjs'];
       sourceExt.forEach((ext) => {
-        expect(existsSpy).toHaveBeenCalledWith(path.resolve(gLocalDirectory, `script-sub${ext}`));
+        expect(existsSpy).toHaveBeenCalledWith(
+          path.resolve(gLocalDirectory, `script-sub${ext}`),
+        );
       });
     });
   });

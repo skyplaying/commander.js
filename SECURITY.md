@@ -2,12 +2,7 @@
 
 ## Supported Versions
 
-Old versions receive security updates for six months.
-
-| Version | Supported                                  |
-| ------- | ------------------------------------------ |
-| 8.x     | :white_check_mark: support ends 2022-07-31 |
-| < 8     | :x:                                        |
+Security updates are supported for the current version and the previous major version.
 
 Pull Requests for security issues will be considered for older versions back to 2.x.
 

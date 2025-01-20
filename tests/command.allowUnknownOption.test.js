@@ -7,7 +7,9 @@ describe('allowUnknownOption', () => {
   let writeErrorSpy;
 
   beforeAll(() => {
-    writeErrorSpy = jest.spyOn(process.stderr, 'write').mockImplementation(() => { });
+    writeErrorSpy = jest
+      .spyOn(process.stderr, 'write')
+      .mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -20,9 +22,7 @@ describe('allowUnknownOption', () => {
 
   test('when specify unknown program option then error', () => {
     const program = new commander.Command();
-    program
-      .exitOverride()
-      .option('-p, --pepper', 'add pepper');
+    program.exitOverride().option('-p, --pepper', 'add pepper');
 
     expect(() => {
       program.parse(['node', 'test', '-m']);
@@ -46,6 +46,7 @@ describe('allowUnknownOption', () => {
     program
       .exitOverride()
       .allowUnknownOption()
+      .argument('[args...]') // unknown option will be passed as an argument
       .option('-p, --pepper', 'add pepper');
 
     expect(() => {
@@ -58,6 +59,7 @@ describe('allowUnknownOption', () => {
     program
       .exitOverride()
       .allowUnknownOption(true)
+      .argument('[args...]') // unknown option will be passed as an argument
       .option('-p, --pepper', 'add pepper');
 
     expect(() => {
@@ -71,7 +73,7 @@ describe('allowUnknownOption', () => {
       .exitOverride()
       .command('sub')
       .option('-p, --pepper', 'add pepper')
-      .action(() => { });
+      .action(() => {});
 
     expect(() => {
       program.parse(['node', 'test', 'sub', '-m']);
@@ -86,7 +88,7 @@ describe('allowUnknownOption', () => {
       .argument('[args...]') // unknown option will be passed as an argument
       .allowUnknownOption()
       .option('-p, --pepper', 'add pepper')
-      .action(() => { });
+      .action(() => {});
 
     expect(() => {
       program.parse(['node', 'test', 'sub', '-m']);

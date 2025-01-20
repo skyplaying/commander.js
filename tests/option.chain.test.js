@@ -9,7 +9,7 @@ describe('Option methods that should return this for chaining', () => {
 
   test('when call .argParser() then returns this', () => {
     const option = new Option('-e,--example <value>');
-    const result = option.argParser(() => { });
+    const result = option.argParser(() => {});
     expect(result).toBe(option);
   });
 
@@ -34,6 +34,12 @@ describe('Option methods that should return this for chaining', () => {
   test('when call .env() then returns this', () => {
     const option = new Option('-e,--example <value>');
     const result = option.env('e');
+    expect(result).toBe(option);
+  });
+
+  test('when call .conflicts() then returns this', () => {
+    const option = new Option('-e,--example <value>');
+    const result = option.conflicts(['a']);
     expect(result).toBe(option);
   });
 });

@@ -1,13 +1,17 @@
 const commander = require('../');
+const process = require('node:process');
 
 test('when default writeErr() then error on stderr', () => {
-  const writeSpy = jest.spyOn(process.stderr, 'write').mockImplementation(() => { });
+  const writeSpy = jest
+    .spyOn(process.stderr, 'write')
+    .mockImplementation(() => {});
   const program = new commander.Command();
   program.exitOverride();
 
   try {
     program.parse(['--unknown'], { from: 'user' });
   } catch (err) {
+    /* empty */
   }
 
   expect(writeSpy).toHaveBeenCalledTimes(1);
@@ -15,16 +19,17 @@ test('when default writeErr() then error on stderr', () => {
 });
 
 test('when custom writeErr() then error on custom output', () => {
-  const writeSpy = jest.spyOn(process.stderr, 'write').mockImplementation(() => { });
+  const writeSpy = jest
+    .spyOn(process.stderr, 'write')
+    .mockImplementation(() => {});
   const customWrite = jest.fn();
   const program = new commander.Command();
-  program
-    .exitOverride()
-    .configureOutput({ writeErr: customWrite });
+  program.exitOverride().configureOutput({ writeErr: customWrite });
 
   try {
     program.parse(['--unknown'], { from: 'user' });
   } catch (err) {
+    /* empty */
   }
 
   expect(writeSpy).toHaveBeenCalledTimes(0);
@@ -33,11 +38,11 @@ test('when custom writeErr() then error on custom output', () => {
 });
 
 test('when default write() then version on stdout', () => {
-  const writeSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => { });
+  const writeSpy = jest
+    .spyOn(process.stdout, 'write')
+    .mockImplementation(() => {});
   const program = new commander.Command();
-  program
-    .exitOverride()
-    .version('1.2.3');
+  program.exitOverride().version('1.2.3');
 
   expect(() => {
     program.parse(['--version'], { from: 'user' });
@@ -48,7 +53,9 @@ test('when default write() then version on stdout', () => {
 });
 
 test('when custom write() then version on custom output', () => {
-  const writeSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => { });
+  const writeSpy = jest
+    .spyOn(process.stdout, 'write')
+    .mockImplementation(() => {});
   const customWrite = jest.fn();
   const program = new commander.Command();
   program
@@ -66,7 +73,9 @@ test('when custom write() then version on custom output', () => {
 });
 
 test('when default write() then help on stdout', () => {
-  const writeSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => { });
+  const writeSpy = jest
+    .spyOn(process.stdout, 'write')
+    .mockImplementation(() => {});
   const program = new commander.Command();
   program.outputHelp();
 
@@ -75,7 +84,9 @@ test('when default write() then help on stdout', () => {
 });
 
 test('when custom write() then help error on custom output', () => {
-  const writeSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => { });
+  const writeSpy = jest
+    .spyOn(process.stdout, 'write')
+    .mockImplementation(() => {});
   const customWrite = jest.fn();
   const program = new commander.Command();
   program.configureOutput({ writeOut: customWrite });
@@ -87,7 +98,9 @@ test('when custom write() then help error on custom output', () => {
 });
 
 test('when default writeErr then help error on stderr', () => {
-  const writeSpy = jest.spyOn(process.stderr, 'write').mockImplementation(() => { });
+  const writeSpy = jest
+    .spyOn(process.stderr, 'write')
+    .mockImplementation(() => {});
   const program = new commander.Command();
   program.outputHelp({ error: true });
 
@@ -96,7 +109,9 @@ test('when default writeErr then help error on stderr', () => {
 });
 
 test('when custom writeErr then help error on custom output', () => {
-  const writeSpy = jest.spyOn(process.stderr, 'write').mockImplementation(() => { });
+  const writeSpy = jest
+    .spyOn(process.stderr, 'write')
+    .mockImplementation(() => {});
   const customWrite = jest.fn();
   const program = new commander.Command();
   program.configureOutput({ writeErr: customWrite });
@@ -117,13 +132,12 @@ test('when default getOutHelpWidth then help helpWidth from stdout', () => {
   process.stdout.columns = expectedColumns;
   process.stdout.isTTY = true;
   const program = new commander.Command();
-  program
-    .configureHelp({
-      formatHelp: (cmd, helper) => {
-        helpWidth = helper.helpWidth;
-        return '';
-      }
-    });
+  program.configureHelp({
+    formatHelp: (cmd, helper) => {
+      helpWidth = helper.helpWidth;
+      return '';
+    },
+  });
   program.outputHelp();
 
   expect(helpWidth).toBe(expectedColumns);
@@ -141,9 +155,10 @@ test('when custom getOutHelpWidth then help helpWidth custom', () => {
       formatHelp: (cmd, helper) => {
         helpWidth = helper.helpWidth;
         return '';
-      }
-    }).configureOutput({
-      getOutHelpWidth: () => expectedColumns
+      },
+    })
+    .configureOutput({
+      getOutHelpWidth: () => expectedColumns,
     });
   program.outputHelp();
 
@@ -159,13 +174,12 @@ test('when default getErrHelpWidth then help error helpWidth from stderr', () =>
   process.stderr.isTTY = true;
   process.stderr.columns = expectedColumns;
   const program = new commander.Command();
-  program
-    .configureHelp({
-      formatHelp: (cmd, helper) => {
-        helpWidth = helper.helpWidth;
-        return '';
-      }
-    });
+  program.configureHelp({
+    formatHelp: (cmd, helper) => {
+      helpWidth = helper.helpWidth;
+      return '';
+    },
+  });
   program.outputHelp({ error: true });
 
   expect(helpWidth).toBe(expectedColumns);
@@ -183,9 +197,10 @@ test('when custom getErrHelpWidth then help error helpWidth custom', () => {
       formatHelp: (cmd, helper) => {
         helpWidth = helper.helpWidth;
         return '';
-      }
-    }).configureOutput({
-      getErrHelpWidth: () => expectedColumns
+      },
+    })
+    .configureOutput({
+      getErrHelpWidth: () => expectedColumns,
     });
   program.outputHelp({ error: true });
 
@@ -203,9 +218,10 @@ test('when custom getOutHelpWidth and configureHelp:helpWidth then help helpWidt
         helpWidth = helper.helpWidth;
         return '';
       },
-      helpWidth: expectedColumns
-    }).configureOutput({
-      getOutHelpWidth: () => 999
+      helpWidth: expectedColumns,
+    })
+    .configureOutput({
+      getOutHelpWidth: () => 999,
     });
   program.outputHelp();
 
@@ -223,13 +239,47 @@ test('when custom getErrHelpWidth and configureHelp:helpWidth then help error he
         helpWidth = helper.helpWidth;
         return '';
       },
-      helpWidth: expectedColumns
-    }).configureOutput({
-      getErrHelpWidth: () => 999
+      helpWidth: expectedColumns,
+    })
+    .configureOutput({
+      getErrHelpWidth: () => 999,
     });
   program.outputHelp({ error: true });
 
   expect(helpWidth).toBe(expectedColumns);
+});
+
+test('when no custom setup and call formatHelp direct then effective helpWidth is fallback 80', () => {
+  // Not an important case, but filling out testing coverage.
+  const helper = new commander.Help();
+  let wrapWidth;
+  helper.boxWrap = (str, width) => {
+    wrapWidth = wrapWidth ?? width;
+    return '';
+  };
+  const program = new commander.Command()
+    .description('description')
+    .helpOption(false);
+  helper.formatHelp(program, helper);
+  expect(wrapWidth).toBe(80);
+});
+
+test('when no custom setup and call formatItem direct then effective helpWidth is fallback 80', () => {
+  // Not an important case, but filling out testing coverage.
+  const helper = new commander.Help();
+  let wrapWidth;
+  helper.boxWrap = (str, width) => {
+    wrapWidth = wrapWidth ?? width;
+    return '';
+  };
+
+  const termWidth = 8;
+  helper.formatItem('term', termWidth, 'description', helper);
+  const itemIndent = 2;
+  const spacerWidth = 2; // between term and description
+  const remainingWidth = 80 - termWidth - spacerWidth - itemIndent;
+
+  expect(wrapWidth).toBe(remainingWidth);
 });
 
 test('when set configureOutput then get configureOutput', () => {
@@ -238,7 +288,10 @@ test('when set configureOutput then get configureOutput', () => {
     writeErr: jest.fn(),
     getOutHelpWidth: jest.fn(),
     getErrHelpWidth: jest.fn(),
-    outputError: jest.fn()
+    getOutHasColors: jest.fn(),
+    getErrHasColors: jest.fn(),
+    outputError: jest.fn(),
+    stripColor: jest.fn(),
   };
   const program = new commander.Command();
   program.configureOutput(outputOptions);
@@ -248,28 +301,54 @@ test('when set configureOutput then get configureOutput', () => {
 test('when custom outputErr and error then outputErr called', () => {
   const outputError = jest.fn();
   const program = new commander.Command();
-  program
-    .exitOverride()
-    .configureOutput({
-      outputError
-    });
+  program.exitOverride().configureOutput({
+    outputError,
+  });
 
   expect(() => {
     program.parse(['--unknownOption'], { from: 'user' });
   }).toThrow();
-  expect(outputError).toHaveBeenCalledWith("error: unknown option '--unknownOption'\n", program._outputConfiguration.writeErr);
+  expect(outputError).toHaveBeenCalledWith(
+    "error: unknown option '--unknownOption'\n",
+    program._outputConfiguration.writeErr,
+  );
 });
 
 test('when custom outputErr and writeErr and error then outputErr passed writeErr', () => {
   const writeErr = () => jest.fn();
   const outputError = jest.fn();
   const program = new commander.Command();
-  program
-    .exitOverride()
-    .configureOutput({ writeErr, outputError });
+  program.exitOverride().configureOutput({ writeErr, outputError });
 
   expect(() => {
     program.parse(['--unknownOption'], { from: 'user' });
   }).toThrow();
-  expect(outputError).toHaveBeenCalledWith("error: unknown option '--unknownOption'\n", writeErr);
+  expect(outputError).toHaveBeenCalledWith(
+    "error: unknown option '--unknownOption'\n",
+    writeErr,
+  );
 });
+
+describe.each([['getOutHasColors'], ['getErrHasColors']])(
+  '%s',
+  (configProperty) => {
+    // Tried and failed to mock/modify process.stdout.isTTY to test that part of implementation.
+    // Just test overrides work as expected!
+
+    const getHasColors = new commander.Command().configureOutput()[
+      configProperty
+    ];
+
+    test.each([
+      [true, 'NO_COLOR', false],
+      [false, 'FORCE_COLOR', true],
+      [false, 'CLICOLOR_FORCE', true],
+    ])('when isTTY=%o but %s then returns %o', (isTTY, envvar, result) => {
+      const holdEnv = process.env[envvar];
+      process.env[envvar] = '1';
+      expect(getHasColors()).toBe(result);
+      if (holdEnv === undefined) delete process.env[envvar];
+      else process.env[envvar] = holdEnv;
+    });
+  },
+);

@@ -1,19 +1,23 @@
-import { program, Command, Option, CommanderError, InvalidArgumentError, InvalidOptionArgumentError, Help, createCommand } from '../';
-
-import * as commander from '../';
+import {
+  program,
+  Command,
+  Option,
+  CommanderError,
+  InvalidArgumentError,
+  InvalidOptionArgumentError,
+  Help,
+  createCommand,
+} from '../';
 
 // Do some simple checks that expected imports are available at runtime.
 // Similar tests to esm-imports-test.js
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+/* eslint-disable jest/expect-expect */
+
 function checkClass(obj: object, name: string): void {
   expect(typeof obj).toEqual('object');
   expect(obj.constructor.name).toEqual(name);
 }
-
-test('legacy default export of global Command', () => {
-  checkClass(commander, 'Command');
-});
 
 test('program', () => {
   checkClass(program, 'Command');
@@ -39,7 +43,8 @@ test('InvalidArgumentError', () => {
   checkClass(new InvalidArgumentError('failed'), 'InvalidArgumentError');
 });
 
-test('InvalidOptionArgumentError', () => { // Deprecated
+test('InvalidOptionArgumentError', () => {
+  // Deprecated
   checkClass(new InvalidOptionArgumentError('failed'), 'InvalidArgumentError');
 });
 

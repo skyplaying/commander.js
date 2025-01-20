@@ -34,21 +34,63 @@ describe('Command methods that should return this for chaining', () => {
     expect(result).toBe(program);
   });
 
-  test('when call .addHelpCommand() then returns this', () => {
+  test('when call .addHelpCommand(cmd) then returns this', () => {
     const program = new Command();
-    const result = program.addHelpCommand(false);
+    const result = program.addHelpCommand(new Command('assist'));
     expect(result).toBe(program);
+  });
+
+  test('when call deprecated .addHelpCommand() then returns this', () => {
+    const program = new Command();
+    const result = program.addHelpCommand();
+    expect(result).toBe(program);
+  });
+
+  test('when call deprecated .addHelpCommand(boolean) then returns this', () => {
+    const program = new Command();
+    const result1 = program.addHelpCommand(true);
+    expect(result1).toBe(program);
+    const result2 = program.addHelpCommand(false);
+    expect(result2).toBe(program);
+  });
+
+  test('when call deprecated .addHelpCommand(string[, string]) then returns this', () => {
+    const program = new Command();
+    const result1 = program.addHelpCommand('assist');
+    expect(result1).toBe(program);
+    const result2 = program.addHelpCommand('assist', 'assist description');
+    expect(result2).toBe(program);
+  });
+
+  test('when call .helpCommand(name) then returns this', () => {
+    const program = new Command();
+    const result = program.helpCommand();
+    expect(result).toBe(program);
+  });
+
+  test('when call .helpCommand(name, description) then returns this', () => {
+    const program = new Command();
+    const result1 = program.helpCommand('assist', 'assist description');
+    expect(result1).toBe(program);
+  });
+
+  test('when call .helpCommand(boolean) then returns this', () => {
+    const program = new Command();
+    const result1 = program.helpCommand(true);
+    expect(result1).toBe(program);
+    const result2 = program.helpCommand(false);
+    expect(result2).toBe(program);
   });
 
   test('when call .exitOverride() then returns this', () => {
     const program = new Command();
-    const result = program.exitOverride(() => { });
+    const result = program.exitOverride(() => {});
     expect(result).toBe(program);
   });
 
   test('when call .action() then returns this', () => {
     const program = new Command();
-    const result = program.action(() => { });
+    const result = program.action(() => {});
     expect(result).toBe(program);
   });
 
@@ -130,9 +172,16 @@ describe('Command methods that should return this for chaining', () => {
     expect(result).toBe(program);
   });
 
-  test('when call .helpOption() then returns this', () => {
+  test('when call .helpOption(flags) then returns this', () => {
     const program = new Command();
-    const result = program.helpOption(false);
+    const flags = '-h, --help';
+    const result = program.helpOption(flags);
+    expect(result).toBe(program);
+  });
+
+  test('when call .addHelpOption() then returns this', () => {
+    const program = new Command();
+    const result = program.addHelpOption(new Option('-h, --help'));
     expect(result).toBe(program);
   });
 
@@ -144,13 +193,13 @@ describe('Command methods that should return this for chaining', () => {
 
   test('when call .configureHelp() then returns this', () => {
     const program = new Command();
-    const result = program.configureHelp({ });
+    const result = program.configureHelp({});
     expect(result).toBe(program);
   });
 
   test('when call .configureOutput() then returns this', () => {
     const program = new Command();
-    const result = program.configureOutput({ });
+    const result = program.configureOutput({});
     expect(result).toBe(program);
   });
 
